@@ -48,7 +48,7 @@ The .mbz contains old-version content the lecturer hid before backup. We respect
 Allowlist rationale: these two sections are hidden because the lecturer hides them from students, not because they're stale. They're real teaching artefacts a new lecturer would want.
 
 **Module inclusion (within an included section):**
-- If the section is visible: include modules with `module.visible == 1` only. This catches per-week cleanup where the lecturer hid an old version of a single resource.
+- If the section is visible: include modules with `module.visible == 1`, PLUS any `page`-type module regardless of its visibility. Rationale: lab walkthroughs and similar teaching content are authored as Moodle pages and frequently hidden during the live course for student-access control; the HTML content is still essential to a new lecturer. Hidden resource-type modules (typically old sample-solution PDFs and stale uploads) stay dropped.
 - If the section is in the hidden-but-allowlisted set: include all modules regardless of `module.visible` (the whole section was hidden as a unit).
 
 **Sections explicitly excluded** (hidden and not allowlisted): `Final Exam, 02 March 2023`-style supplementary sections, `Top 10 Performance Ranking for Cloth Code`, `Old Material - Week 1` through `Old Material - Week 7`.
