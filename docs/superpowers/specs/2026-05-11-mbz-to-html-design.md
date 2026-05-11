@@ -43,7 +43,7 @@ The .mbz contains old-version content the lecturer hid before backup. We respect
 
 **Section inclusion:**
 - Include the section if `section.visible == 1`, OR
-- Include if the section title is in the allowlist: `{"Final Exam", "Course Review Material"}`.
+- Include if the section title matches (case-insensitive, exact) any entry in the allowlist: `{"Final Exam", "Course Review Material"}`.
 
 Allowlist rationale: these two sections are hidden because the lecturer hides them from students, not because they're stale. They're real teaching artefacts a new lecturer would want.
 
@@ -91,7 +91,7 @@ Images referenced inside any page (inlined or standalone) get copied to `assets/
 
 Walk included Moodle sections in their original `<number>` order. For each section, render a Bootstrap card:
 
-- **Section title** as the card header.
+- **Section title** as the card header. If the section has no title (Moodle's section 0 commonly has none), use the placeholder heading `Course Information`.
 - **Inlined page intros** (short pages from that section) as descriptions inside the card.
 - **Ordered list of the section's activities**, one line each:
   - `resource` → title linked to the file in its categorized folder.
