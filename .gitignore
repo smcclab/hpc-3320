@@ -1,0 +1,12 @@
+# Source Moodle backup — too large to track (5.5GB)
+*.mbz
+
+# Local Claude / agent state
+.claude/
+
+# Build inputs and outputs that aren't part of the deliverable
+_work/
+_templates/
+build.py
+filtered.log
+categorization.txt
