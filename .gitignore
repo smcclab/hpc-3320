@@ -10,3 +10,12 @@ _templates/
 build.py
 filtered.log
 categorization.txt
+tests/
+mbz/
+
+# Deliverable file types — override the user's global .gitignore which
+# excludes *.pdf and *.xml. The course content lives in PDFs and we want
+# to commit them as part of the static site. (_work/ is still excluded
+# above, so the source-backup PDFs inside it stay ignored.)
+!*.pdf
+!*.xml

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collecting a roofline plot without using X11 forwarding — COMP3320 High Performance Computing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-light border-bottom mb-3">
+  <div class="container"><a class="navbar-brand" href="../index.html">← COMP3320 High Performance Computing</a></div>
+</nav>
+<main class="container">
+<h1 class="mb-3">Collecting a roofline plot without using X11 forwarding</h1>
+<article class="moodle-page">
+<p><span style="font-size: 0.9rem;">Go to the intel web page for&nbsp;<a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/advisor.html#gs.fgw0n0">Intel Advisor</a>&nbsp;and</span><span style="font-size: 0.9rem;">&nbsp;download the Intel Advisor for your specific OS. Note that for Mac this is reported under "Intel Advisor for Linux" where you can find the .dmg installer.</span><span style="font-size: 0.9rem;"></span></p>
+<p><span style="font-size: 0.9rem;">Once Intel Advisor </span>is<span style="font-size: 0.9rem;">&nbsp;</span>installed,<span style="font-size: 0.9rem;"> log on Gadi</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">ssh user_name@gadi.nci.org.au</span>
+</p>
+<p><span style="font-size: 0.9rem;">Then log on to a compute node&nbsp;</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">qsub -I -P c07 -q normal -l walltime=00:10:00,mem=190GB,jobfs=100GB,ncpus=48</span>
+</p>
+<p><span style="font-size: 0.9rem;">Once you are on a compute node, you can cd in your assignment directory, more specifically cd in the directory containing the binary of your code. Then, load specifically the following version of Intel Advisor</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">module load intel-advisor</span>
+</p>
+<p><span style="font-size: 0.9rem;">Then set the following environment variables&nbsp;</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">export ADVIXE_EXPERIMENTAL=int_roofline</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">export OMP_NUM_THREADS=&lt;num_threads&gt;</span>
+</p>
+<p>where num_thread=desired number of threads to be used.</p>
+<p>Then run the following commands to collect all the necessary data&nbsp;</p>
+<p><span style="font-size: 0.9rem; font-family: &quot;Courier New&quot;, Courier, mono;" class="">advixe-cl --collect survey --project-dir ./adv_results --search-dir src:=../ --search-dir bin:=./ -- ./cloth_binary</span> <br>
+</p>
+<p><span style="font-size: 0.9rem; font-family: &quot;Courier New&quot;, Courier, mono;" class="">advixe-cl --collect tripcounts -flop -enable-cache-simulation --project-dir ./adv_results --search-dir src:=../ --search-dir bin:=./ -- ./cloth_binary</span> <br>
+</p>
+<p><span style="font-size: 0.9rem;">This will store all the results in the adv_results directory.</span> <br>
+</p>
+<p><span style="font-size: 0.9rem;">Download the adv_results directory on your machine, for example using </span>scp<span style="font-size: 0.9rem;"> from your machine</span>
+</p>
+<p><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">scp -r user_name@gadi.nci.org.au:path_to_adv_results_directory_on_gadi destination_path_on_your_machine</span>&nbsp;</p>
+<p><span style="font-size: 0.9rem;">Start Intel Advisor up from your machine. Under file -&gt; open select the "Results..." option </span>and open<span style="font-size: 0.9rem;"> the .advixeproj file. Then select the "Show my results" option. You will be able to visualise (or dump as .html) your roofline plot under "Survey &amp; Roofline" after clicking on the ROOFLINE option appearing on the grey bar on the left.&nbsp;</span> <br>
+</p>
+</article>
+</main>
+</body>
+</html>

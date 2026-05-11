@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collecting a roofline plot using X11 forwarding — COMP3320 High Performance Computing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-light border-bottom mb-3">
+  <div class="container"><a class="navbar-brand" href="../index.html">← COMP3320 High Performance Computing</a></div>
+</nav>
+<main class="container">
+<h1 class="mb-3">Collecting a roofline plot using X11 forwarding</h1>
+<article class="moodle-page">
+<p></p><p><span lang="EN-US">You will need to log on Gadi with X forwarding enabled by running the line</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: &quot;Courier New&quot;, Courier, mono;" class="">ssh -X user_name@gadi.nci.org.au</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">This will take you to a login node.</span></p><p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">In order to access an entire compute node (with a 2-socket Intel Cascade Lake architecture) for 15 minutes with X forwarding run</span></p><p><span style="font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 0.9rem;"><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">qsub</span><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;"> -I -X -P c07 -q normal -l walltime=00:15:00,mem=190GB,jobfs=100GB,ncpus=48</span></span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;"><u>PLEASE BE SENSIBLE</u>, <u>do no use too much time (that is not too many of these sessions) otherwise your colleagues might not be left with enough computer time to run calculations necessary for their assignment.</u></span></p><p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">Once you are on a compute node, you can cd in your assignment directory, more specifically cd in the directory containing the binary of your code. Then, l</span><span style="font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 0.9rem;">oad Intel Advisor</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: &quot;Courier New&quot;, Courier, mono;" class="">module load intel-advisor</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">Set the number of threads you would like to use for your roofline analysis</span></p><p><span style="font-family: &quot;Courier New&quot;, Courier, mono; font-size: 0.9rem;" class="">export OMP_NUM_THREADS=&lt;number of threads&gt;</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">Collect an initial Intel Advisor survey</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;"><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">advixe</span><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">-cl --collect survey --project-dir ./adv_results --search-dir src:=../ --search-dir bin:=./ -- ./cloth</span></span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">Then run the Intel Advisor GUI</span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;"><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">advixe</span><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">-</span><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;">gui</span><span class="" style="font-family: &quot;Courier New&quot;, Courier, mono;"> &amp;</span></span></p>
+
+<p><span style="font-size: 0.9rem; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;">and follow the instructions in the Video Recording of Lecture 10 (Week 12) – Part II for producing a roofline plot.</span></p><br><p></p>
+</article>
+</main>
+</body>
+</html>

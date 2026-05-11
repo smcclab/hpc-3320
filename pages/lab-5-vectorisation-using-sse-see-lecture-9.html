@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab 5: Vectorisation using SSE (see lecture 9) — COMP3320 High Performance Computing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-light border-bottom mb-3">
+  <div class="container"><a class="navbar-brand" href="../index.html">← COMP3320 High Performance Computing</a></div>
+</nav>
+<main class="container">
+<h1 class="mb-3">Lab 5: Vectorisation using SSE (see lecture 9)</h1>
+<article class="moodle-page">
+<center>
+<h1>COMP3320/6464 2018: Laboratory 5</h1>
+<h1>Streaming SIMD instructions (SSE2)</h1>
+<i>The aim of this lab is to provide a basic introduction to the Streaming SIMD instruction programming technique. </i></center>
+<p></p>
+<p>Start by creating a directory on raijin and copying all the relevant programs from <a href="../assets/2f47bdd8-lab5.tar">lab5.tar.gz</a> into that directory. <br> <strong>Set up your environment by typing:</strong></p>
+<ul>
+<li><tt>module load gcc</tt></li>
+<li><tt>module load papi</tt></li>
+</ul>
+<p>You are not required to submit labs, but all lab material is examinable! You are therefore advised to record you answers to each question.</p>
+<p>Content of the l<a href="../assets/2f47bdd8-lab5.tar">ab5.tar.gz </a>&nbsp;archive:</p>
+<ul>
+<li>vector_add - SSE implementation of vector addition</li>
+<li>vector_dot - SSE implementation of vector dot product</li>
+<li>vector_saxpy - SSE implementation of the saxpy loop</li>
+</ul>
+<p>Many compute-intensive applications can significantly improve their performance by using Single Instruction, Multiple Data (SIMD) instructions to process data elements in parallel.</p>
+<p>The most direct way to use these instructions is to inline the assembly language instructions into your source code. However, this process can be time-consuming and tedious. In addition, your compiler may not support inline assembly language programming. The GNU and Intel C++ Compiler enable easy implementation of these instructions through the use of API extension sets built into the compiler. These extension sets are referred to as intrinsic functions or intrinsics.</p>
+<p><span>An online Intel SIMD Intrinsics manual is&nbsp;</span><a href="https://software.intel.com/sites/landingpage/IntrinsicsGuide/" class="external-link" rel="nofollow">here</a>.&nbsp;&nbsp;An exhaustive Intel manual can be found <a href="../assets/d9bbb855-SSE2.pdf" target="_parent">here</a>.</p>
+<h3>The SSE2 datatypes</h3>
+<p>The <tt>emmintrin.h</tt> header file contains the declarations for the SSE2 intrinsics. This header file defines all the instructions and data types in SSE2.</p>
+<p>SSE2 intrinsics can be used with following datatypes:</p>
+<ul>
+<li><tt>__m128</tt> - packed FP datatype containing 4 floats</li>
+<li><tt>__m128d </tt>- packed FP datatype containing 2 doubles</li>
+<li><tt>__m128i </tt>- packed FX datatype containing 4 ints, or 8 shorts or 16 bytes</li>
+</ul>
+<h3>The naming and usage syntax for SSE2 instructions</h3>
+<p>Most intrinsic names use the following notational convention:<br> <tt> _mm_&lt;intrin_op&gt;_&lt;suffix&gt; </tt></p>
+<ul>
+<li><tt>&lt;intrin_op&gt;</tt> Indicates the basic operation of the intrinsic; for example, add for addition and sub for subtraction</li>
+<li><span style="font-family: monospace; font-size: 1.2em; line-height: 1.5;">&lt;suffix&gt;&nbsp;</span>Denotes the type of data the instruction operates on. The first one or two letters of each suffix denote whether the data is packed (<span style="font-family: monospace; font-size: 1.2em; line-height: 1.5;">p</span><span style="line-height: 1.4;">), extended packed (</span><span style="font-family: monospace; font-size: 1.2em; line-height: 1.5;">ep</span><span style="line-height: 1.4;">) (this relates to the length of the SIMD register), or scalar (</span><span style="font-family: monospace; font-size: 1.2em; line-height: 1.5;">s</span><span style="line-height: 1.4;">). The remaining letters and numbers denote the type, with notation as follows:</span></li>
+</ul>
+<ul>
+<ul>
+<li><tt>s</tt> single-precision floating point</li>
+<li><tt>d</tt> double-precision floating point</li>
+<li><tt>i128</tt> signed 128-bit integer</li>
+<li><tt>i64</tt> signed 64-bit integer</li>
+<li><tt>u64</tt> unsigned 64-bit integer</li>
+<li><tt>i32</tt> signed 32-bit integer</li>
+<li><tt>u32</tt> unsigned 32-bit integer</li>
+<li><tt>i16</tt> signed 16-bit integer</li>
+<li><tt>u16</tt> unsigned 16-bit integer</li>
+<li><tt>i8</tt> signed 8-bit integer</li>
+<li><tt>u8</tt> unsigned 8-bit integer</li>
+</ul>
+</ul>
+<h3>The most frequently used SSE2 intrinsics</h3>
+<ul>
+<li>Load operations:
+<pre>    __m128 _mm_load1_ps(float * p)       // Load one SP FP value into all four words
+    __m128 _mm_load_ps (float * p)       // Load four SP FP values, the address must be 16-byte-aligned </pre>
+</li>
+<li>Set operations:
+<pre>    __m128 _mm_set1_ps(float w)          // Set the four SP FP values to w
+    __m128 _mm_set_ps(float z, float y,  // Set the four SP FP values to the four inputs.
+                      float x, float w ) </pre>
+</li>
+<li>Store operations:
+<pre>     void _mm_store1_ps(float * p, __m128 a) // Stores the lower SP FP value across four words.
+     void _mm_store_ps(float *p, __m128 a)   // Stores the four SP FP values. The address must be 16-byte-aligned</pre>
+</li>
+<li>Arithmetic operations:
+<pre>        
+     __m128 _mm_add_ss(__m128 a, __m128 b) // Add the lower single-precision, floating-point (SP FP) values of a and
+                                           // the upper 3 SP FP values are passed through from a.
+     __m128 _mm_add_ps(__m128 a, __m128 b) // add two registers element by element
+
+</pre>
+</li>
+etc.</ul>
+<h3>SSE Vector add example</h3>
+<p>Our first SSE example will focus on vector addition implemented in SSE. You can find the implementation of three versions of vector addition in file <tt>vector_add.cpp</tt>. There are four functions in this file</p>
+<pre>   VectorAdd           - Standard implementation of vector add
+   VectorAddUnrolled   - Unrolled version of vector add
+   VectorAddSSE        - SSE implementation of vector add
+   ExecuteVectorAdds   - Function that runs all versions and shows the results
+</pre>
+<ol>
+<li><span style="color: #0000ff;" color="#0000FF"> Make the vector addition project by typing <tt> make vector_add</tt>. You should now see a very long report from the compiler. It provides you with details about autovectorization process used in Standard and Unrolled implementation. Of course, it wasn't able to vectorize the code written in SSE. Go through the output and write down what loops have been vectorized.</span></li>
+<li><span style="color: #0000ff;" color="#0000FF"><span style="color: #0000ff;" color="#0000FF"> You can run the code by typing <tt> vector_add vector_size number_of_repetitions </tt>. The number of elements taken as a parameter is multiplied by 1024 in order to work with large arrays. Look at <a href="http://icl.cs.utk.edu/projects/papi/wiki/PAPITopics:SandyFlops"><span style="color: #0000ff;" color="#0000FF"><span style="color: #0000ff;" color="#0000FF">http://icl.cs.utk.edu/projects/papi/wiki/PAPITopics:SandyFlops</span></span></a> and change the definition of the PAPI counter to get a correct definition (see section on PAPI Preset Definitions) . </span></span></li>
+<li>C<span style="color: #0000ff;" color="#0000FF"><span style="color: #0000ff;" color="#0000FF">omplete the following table.</span></span>
+<pre>            Execution time and MFLOPS of vector add
+--------------------+--------+--------------+---------------+ 
+                    |        |  exec. time  |    MFLOPS     |
+--------------------+--------+--------------+---------------+ 
+vector_add 2 8192   | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+vector_add 256 1024 | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+vector_add 2048 64  | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+</pre>
+</li>
+<li><span style="color: #0000ff;" color="#0000FF">You can see that the performance on small arrays is much higher. Can you explain why?</span></li>
+</ol>
+<h3>SSE vector dot product</h3>
+<p>The next example deals with an SSE implementation of the vector dot product. You can find the implementation of three versions of vector dot product in file <tt>vector_dot.cpp</tt>. There are four functions in this file</p>
+<pre>   VectorDot           - Standard implementation of vector dot product
+   VectorDotUnrolled   - Unrolled version of vector dot product
+   VectorDotSSE        - SSE implementation of vector dot product
+   ExecuteVectorDots   - Function that runs all versions and shows the results
+</pre>
+<ol start="5">
+<li><span style="color: #0000ff;" color="#0000FF"> Make the vector dot product project by typing <tt> make vector_dot</tt>. How many loops was the compiler able to vectorize? </span></li>
+<li><span style="color: #0000ff;" color="#0000FF"> Open the file <tt> vector_dot.cpp</tt> and take a look at it. When you reach <tt>VectorDotSSE</tt> you will see that something is missing there. To complete the code, you have to put TWO SSE instructions here. Make these changes then verify the code by typing <tt>vector_dot 10 1</tt></span></li>
+<li><span style="color: #000080;"><span style="color: #0000ff;">(IMPORTANT YOU UNDERSTAND THIS QUESTION). Run the code with input a vector length of 372 and 1 repeat. Look carefully at the three computed values for the vector dot product. You find the value for the standard code to be 17090484 but the values for the unrolled and SSE code to be 17090486, i.e. 2 larger. Which value is correct? Why is your program reporting "wrong" answers in some circumstances? Repeat this experiment for slight different values of vector lenght, e.g. 371 and 373.</span><span color="#0000FF"></span></span></li>
+<li><span style="color: #0000ff;" color="#0000FF"><span style="color: #0000ff;" color="#0000FF"> When the code is running correctly, we want to measure its performance. Open the header file <tt>vector_dot.h</tt> and uncomment the line 11 (<tt>#define PERFORMANCE</tt>) and rebuild the project. Fill in following table:</span></span>
+<pre>            Execution time and MFLOPS of vector dot product
+--------------------+--------+--------------+---------------+ 
+                    |        |  exec. time  |    MFLOPS     |
+--------------------+--------+--------------+---------------+ 
+vector_dot 2 8192   | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+vector_dot 256 1024 | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+vector_dot 2048 64  | Add    |              |               |
+                    | Unroll |              |               |
+                    | SSE    |              |               |
+--------------------+--------+--------------+---------------+ 
+The performance should be much higher here. Explain why.</pre>
+</li>
+</ol><hr noshade="noshade">
+<h3>SSE implementation of SAXPY loop</h3>
+<p>The last examples focuses on a SAXPY loop implementation (the same as DAXPY but with single precision floating point numbers). You can find the implementation of three versions of SAXPY in file <tt>saxpy.cpp</tt>. There are four functions in this file</p>
+<pre>   SAXPY           - Standard implementation of 
+   SAXPYUnrolled   - Unrolled version of vector add
+   SAXPYSSE        - SSE implementation of vector add
+   ExecuteSAXPYs   - Function that runs both versions and shows the results
+</pre>
+<ol start="9">
+<li><span style="color: #0000ff;" color="#0000FF"> Based on two codes provided in the file <tt> SAXPY.cpp </tt> create an SSE implementation. You can make the SAXPY project by typing <tt> make vector_saxpy</tt> </span></li>
+<li><span style="color: #0000ff;" color="#0000FF"> When you are sure the code produces the right answer, measure the performance of the code. Do not forget to uncomment the line 11 (<tt>#define PERFORMANCE</tt>) in <tt>saxpy.h</tt>. Use the same parameters as above.</span></li>
+<li><span style="color: #0000ff;" color="#0000FF"> The performance can further be improved by Unrolling the SSE loop! Unroll the innermost loop in SAXPYSSE. Can you see the improvement and for what array sizes?</span></li>
+<li><span style="color: #0000ff;" color="#0000FF">Finally, to improve pipelining, you can reorder some instructions putting all loads, all adds and mulls together and overlap the data dependencies. Make it so and measure the performance again.</span></li>
+</ol><p><span style="caret-color: rgb(0, 0, 255);"><br></span></p><p><span style="caret-color: rgb(0, 0, 255);"></span></p><h3><span style="caret-color: rgb(51, 51, 51);">Submitting a Job in Gadi</span></h3><p>Till now you have been executing the programs in the login node of Gadi. The login nodes are shared by multiple users and computational resources allocated per user in the login node is limited. To run a computationally intensive job you need to request an exclusive node (computing node) using the job scheduler <a href="https://www.openpbs.org">PBS</a>. The NCI documentation <a href="https://opus.nci.org.au/display/Help/How+to+submit+a+job">here</a>&nbsp;details how to submit a job using PBS. A sample job file is available <a href="../assets/2a7cd0cc-PBS_sample">here</a>.&nbsp;</p><br><p></p>
+</article>
+</main>
+</body>
+</html>

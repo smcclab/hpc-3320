@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -P c07
+#PBS -q normal
+#PBS -l walltime=00:15:00
+#PBS -l mem=196GB
+#PBS -l jobfs=1GB
+#PBS -l ncpus=48
+
+module load papi gcc
+
+./program_binary 

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab 8: Catch-up and assignment lab — COMP3320 High Performance Computing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-light border-bottom mb-3">
+  <div class="container"><a class="navbar-brand" href="../index.html">← COMP3320 High Performance Computing</a></div>
+</nav>
+<main class="container">
+<h1 class="mb-3">Lab 8: Catch-up and assignment lab</h1>
+<article class="moodle-page">
+<center>
+<p></p>
+<h2>Using the Batch Queue on Raijin</h2>
+<p></p>
+<p>There is no formal lab this week. This is an opportunity for you to go back and look at the previous 3 labs and also to work on your assignment.</p>
+<p></p>
+<p style="text-align: left;">So far we have only been running our code on one of the Raijin nodes. In total the Raijin has over 3000 nodes (and 80,000 cores). Six of these are reserved for interactive logins; the remaining nodes are only available via a batch queuing system. (Which of the six interactive nodes are you logged on to? Run the command <code>hostname</code> if unsure.) Go back to the userguide and read the section entitled <a href="https://opus.nci.org.au/display/Help/Raijin+User+Guide#RaijinUserGuide-JobSubmissionandScheduling">Job Submission and Scheduling</a> including subsections of Queue Structure, PBSPro Scheduling and PBSPro Basics.</p>
+<p style="text-align: left;">Download the file <a href="../assets/c10566ca-lab8.tar.gz">lab8.tar.gz</a> - this contains an openmp version of the code to compute Pi by numerical integration. We will just use this to demonstrate how the queuing system works.</p>
+<p style="text-align: left;">To submit a job to the queuing system we have to write batch script. An example of this is given in file <tt>batch_job</tt>. Take a look at this. Lines starting with <tt>PBS</tt> are commands to the queuing system, informing it of how much resources you require and how your job should be executed. We use one of these lines to set the number of processors you want to use. <em>Very important is the line to limit the walltime:</em></p>
+<p style="text-align: left;"><em><tt>#PBS -l walltime=00:00:10 </tt></em><em>Please ensure you limit walltime similarly for any batch job that you use</em><span>. After all this setup information you run the job (</span><tt>ompbatch N_threads, N_points)</tt><span>.</span></p>
+<p style="text-align: left;"><span>Note the #PBS -lncpus=4 will allocate 4 cores to the job. Thus if you run your job with more threads than cores you are asking the system to oversubscribe threads to cores.</span></p>
+<p style="text-align: left;">To submit your job to the queuing system, run <code>qsub batch_job</code>.</p>
+<p style="text-align: left;">It will respond with something like</p>
+<pre><code>$ qsub batch_job
+9485588.r-man2</code></pre>
+<p style="text-align: left;">where <tt>9485588.r-man2</tt> is the id of the job in the queuing system. To see what is happening on the batch queue, run <code>qstat</code>:</p>
+<pre>aaa444@raijin:~/prac1&gt; qstat
+
+Job id            Name             User              Time Use S Queue
+----------------  ---------------- ----------------  -------- - -----
+9266041.r-man2    arg.62A          ahf564            285:28:5 R normal-node
+
+                    ---lots of jobs---
+
+9485672.r-man2    batch_job        aaa444                   0 Q express-node
+</pre>
+<p style="text-align: left;">This gives a long list of jobs. In the above the top job is running as indicated by the <tt>R</tt> in the <tt>S</tt> column, while my job is queued as indicated by the <tt>Q</tt>.</p>
+<p style="text-align: left;">When the job has finished you should find a file batch_job.oXXXXX and batch_job.eXXXXX in your directory containing the standard output and error from computation.</p>
+<p style="text-align: left;"></p>
+<i></i></center>
+</article>
+</main>
+</body>
+</html>
