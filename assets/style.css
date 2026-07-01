@@ -1,3 +1,19 @@
 .moodle-intro { background: #fafbfc; padding: .5rem .75rem; border-left: 3px solid #dee2e6; }
 .moodle-page img { max-width: 100%; height: auto; }
 .card-header h2 { font-weight: 600; }
+
+/* Small category labels inside week cards */
+.week-label {
+  font-size: .72rem;
+  letter-spacing: .04em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6c757d;
+  margin-bottom: .35rem;
+}
+.week-label + ul { margin-bottom: 0; }
+
+/* Compact multi-column link lists for Getting Started / Resources */
+.link-columns { margin-bottom: 0; }
+.link-columns li { break-inside: avoid; margin-bottom: .15rem; }
+@media (min-width: 576px) { .link-columns { column-count: 2; column-gap: 2rem; } }
